@@ -1,6 +1,9 @@
 import React from 'react'
+import { useState } from 'react';
 
 const Calendar = () => {
+    const [dia, setDia] = useState(null);
+
     // 1. Descobrimos que Abril tem 30 dias
     const diasNoMes = new Date(2026, 4, 0).getDate(); 
 
