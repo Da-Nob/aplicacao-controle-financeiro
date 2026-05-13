@@ -1,5 +1,6 @@
 import React from 'react'
-import { useState } from 'react';
+import React, {useState} from 'react'
+import DayModal from './DayModal'
 
 const Calendar = () => {
     const [dia, setDia] = useState(null);
@@ -21,10 +22,11 @@ const Calendar = () => {
             return <div key={index} className="dia-vazio"></div>
         } else {
             const diaAtual = (index - espacosVazios) + 1;
-            return <div key={index} className="dia">{diaAtual}</div>
+            return <div key={index} className="dia" onClick={() => setDia(diaAtual)}>{diaAtual}</div>
         }
       })}
     </div>
+    {dia && <DayModal diaSelecionado={dia}  aoFechar={setDia} />}
   )
 }
 
