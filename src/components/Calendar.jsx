@@ -4,6 +4,7 @@ import DayModal from './DayModal'
 
 const Calendar = () => {
     const [dia, setDia] = useState(null);
+    const [todosOsGastos, setTodosOsGastos] = useState([]);
 
     // 1. Descobrimos que Abril tem 30 dias
     const diasNoMes = new Date(2026, 4, 0).getDate(); 
@@ -26,7 +27,7 @@ const Calendar = () => {
         }
       })}
     </div>
-    {dia && <DayModal diaSelecionado={dia}  aoFechar={setDia} />}
+    {dia && <DayModal diaSelecionado={dia}  aoFechar={setDia} gastos={todosOsGastos} aoAdicionar={setTodosOsGastos}/>}
   )
 }
 
