@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar}) => {
+const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar, aoExcluir}) => {
   // 1. Estados de memória do componente
   const [gastosDoDia, setGastosDoDia] = useState([]); // Simulando a lista de gastos
   const [titulo, setTitulo] = useState("");
@@ -36,6 +36,9 @@ const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar}) => {
           <div key={gasto.id} className="item-gasto">
             <span>{gasto.titulo}</span>
             <span>{gasto.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+
+            {/* Botão de Excluir */}
+            <button onClick={() => aoExcluir(gasto.id)}>Excluir</button>
           </div>
         ))}
       </div>

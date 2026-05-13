@@ -1,5 +1,4 @@
-import React from 'react'
-import React, {useState} from 'react'
+import React, { useState } from 'react';
 import DayModal from './DayModal'
 
 const Calendar = () => {
@@ -16,7 +15,15 @@ const Calendar = () => {
     const tamanhoTotal = espacosVazios + diasNoMes; 
     const gradeCalendario = new Array(tamanhoTotal).fill(null);
 
+    const excluirGasto = (idParaRemover) => {
+      const listaAtualizada = todosOsGastos.filter(gasto => gasto.id !== idParaRemover)
+      setTodosOsGastos(listaAtualizada);
+    }
+    
+
+
   return (
+    <>
     <div className="grade-calendario">
       {gradeCalendario.map((item, index) => {
         if (index < espacosVazios) {
@@ -28,6 +35,7 @@ const Calendar = () => {
       })}
     </div>
     {dia && <DayModal diaSelecionado={dia}  aoFechar={setDia} gastos={todosOsGastos} aoAdicionar={setTodosOsGastos}/>}
+    </>
   )
 }
 
