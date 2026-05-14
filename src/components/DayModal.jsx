@@ -1,67 +1,115 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+
+const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+});
 
 const DayModal = ({ diaSelecionado, dataReferencia, aoFechar, gastos, aoAdicionar }) => {
-  const [titulo, setTitulo] = useState("");
-  const [valor, setValor] = useState("");
+  const [titulo, setTitulo] = useState('');
+  const [valor, setValor] = useState('');
 
   const mesAtual = dataReferencia.getMonth();
   const anoAtual = dataReferencia.getFullYear();
 
-  // Filtramos apenas os gastos deste dia/mês/ano específico
-  const gastosDesteDia = gastos.filter(g => 
-    g.dia === diaSelecionado && g.mes === mesAtual && g.ano === anoAtual
+  const gastosDesteDia = gastos.filter((gasto) =>
+    gasto.dia === diaSelecionado && gasto.mes === mesAtual && gasto.ano === anoAtual
   );
 
-  const totalDia = gastosDesteDia.reduce((acc, g) => acc + g.valor, 0);
+  const totalDia = gastosDesteDia.reduce((acc, gasto) => acc + gasto.valor, 0);
 
   const salvarGasto = () => {
-    if (!titulo || !valor) return;
-    const novo = {
-      id: Math.random(),
-      titulo,
-      valor: parseFloat(valor),
+    if (!titulo.trim() || !valor) return;
+
+    const novoGasto = {
+      id: crypto.randomUUID(),
+      titulo: titulo.trim(),
+      valor: Number(valor),
       dia: diaSelecionado,
       mes: mesAtual,
-      ano: anoAtual
+      ano: anoAtual,
     };
-    aoAdicionar([...gastos, novo]);
-    setTitulo("");
-    setValor("");
+
+    aoAdicionar([...gastos, novoGasto]);
+    setTitulo('');
+    setValor('');
   };
 
   const aoExcluir = (id) => {
-    if (window.confirm("Tem certeza que deseja apagar este gasto?")) {
-      aoAdicionar(gastos.filter(g => g.id !== id));
+    if (window.confirm('Tem certeza que deseja apagar este gasto?')) {
+      aoAdicionar(gastos.filter((gasto) => gasto.id !== id));
     }
   };
 
   return (
-    <div className="modal-overlay" onClick={aoFechar}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <h2>Gastos de {diaSelecionado}/{mesAtual + 1}</h2>
-        
-        <div className="lista-gastos">
-          {gastosDesteDia.map(g => (
-            <div key={g.id} className="item-gasto">
-              <span>{g.titulo}</span>
-              <span>{g.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-              <button onClick={() => aoExcluir(g.id)}>🗑️</button>
-            </div>
-          ))}
-        </div>
+    <div className="modal-overlay" onClick={aoFechar} role="presentation">
+      <article
+        className="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="modal-icon" aria-hidden="true"><span className="wallet-icon"><span className="wallet-shape"><span className="wallet-coin" /></span></span></div>
 
-        <div className="total-dia">
-          <strong>Total: {totalDia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
-        </div>
+        <h2 id="modal-title">Gastos do dia {diaSelecionado}</h2>
+        <p className="modal-total">Total: <strong>{formatarMoeda(totalDia)}</strong></p>
 
-        <div className="formulario-gasto">
-          <input value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="O que comprou?" />
-          <input type="number" value={valor} onChange={e => setValor(e.target.value)} placeholder="Valor" />
-          <button onClick={salvarGasto}>Adicionar</button>
-        </div>
-        
-        <button className="botao-fechar" onClick={aoFechar}>Fechar</button>
-      </div>
+        <div className="modal-divider" />
+
+        {gastosDesteDia.length > 0 && (
+          <div className="lista-gastos" aria-label="Gastos cadastrados neste dia">
+            {gastosDesteDia.map((gasto) => (
+              <div key={gasto.id} className="item-gasto">
+                <div>
+                  <span>{gasto.titulo}</span>
+                  <strong>{formatarMoeda(gasto.valor)}</strong>
+                </div>
+                <button type="button" onClick={() => aoExcluir(gasto.id)} aria-label={`Excluir ${gasto.titulo}`}>
+                  🗑️
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <form className="formulario-gasto" onSubmit={(event) => { event.preventDefault(); salvarGasto(); }}>
+          <label htmlFor="nome-gasto">Nome do gasto</label>
+          <div className="input-group">
+            <span aria-hidden="true">🏷️</span>
+            <input
+              id="nome-gasto"
+              value={titulo}
+              onChange={(event) => setTitulo(event.target.value)}
+              placeholder="Ex.: Almoço, Transporte, Supermercado..."
+            />
+          </div>
+
+          <label htmlFor="valor-gasto">Valor</label>
+          <div className="input-group">
+            <span>R$</span>
+            <input
+              id="valor-gasto"
+              type="number"
+              min="0"
+              step="0.01"
+              value={valor}
+              onChange={(event) => setValor(event.target.value)}
+              placeholder="0,00"
+            />
+          </div>
+
+          <button className="botao-adicionar" type="submit">
+            <span aria-hidden="true">✚</span>
+            Adicionar Gasto
+          </button>
+        </form>
+
+        <button className="botao-fechar" type="button" onClick={aoFechar}>
+          <span aria-hidden="true">×</span>
+          Fechar
+        </button>
+      </article>
     </div>
   );
 };
