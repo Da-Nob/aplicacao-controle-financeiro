@@ -1,87 +1,69 @@
 import React, { useState } from 'react';
 
-const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar, aoExcluir}) => {
-  // 1. Estados de memória do componente
-  const [gastosDoDia, setGastosDoDia] = useState([]); // Simulando a lista de gastos
+const DayModal = ({ diaSelecionado, dataReferencia, aoFechar, gastos, aoAdicionar }) => {
   const [titulo, setTitulo] = useState("");
   const [valor, setValor] = useState("");
 
-  // 2. Função de ação do formulário
-  const salvarValorGasto = () => {
-    const novoGasto = {
-      id: Math.random(),
-      titulo: titulo,
-      valor: parseFloat(valor), // parseFloat garante que o texto digitado seja tratado como número
-      dia: diaSelecionado
-    };
-    
-    // Usa a prop 'aoAdicionar' e a lista 'gastos' vindas do pai
-    aoAdicionar([...gastosDoDia, novoGasto]);
+  const mesAtual = dataReferencia.getMonth();
+  const anoAtual = dataReferencia.getFullYear();
 
-    // Limpa os campos após salvar
+  // Filtramos apenas os gastos deste dia/mês/ano específico
+  const gastosDesteDia = gastos.filter(g => 
+    g.dia === diaSelecionado && g.mes === mesAtual && g.ano === anoAtual
+  );
+
+  const totalDia = gastosDesteDia.reduce((acc, g) => acc + g.valor, 0);
+
+  const salvarGasto = () => {
+    if (!titulo || !valor) return;
+    const novo = {
+      id: Math.random(),
+      titulo,
+      valor: parseFloat(valor),
+      dia: diaSelecionado,
+      mes: mesAtual,
+      ano: anoAtual
+    };
+    aoAdicionar([...gastos, novo]);
     setTitulo("");
     setValor("");
   };
 
-  const gastosDesteDia = gastos.filter((gasto) => gasto.dia === diaSelecionado)
-
-  const confirmarExclusao = id => {
-    const certeza = window.confirm("tem certeza que deseja apagar este gasto?");
-
-    if (certeza) {
-      aoExcluir(id);
+  const aoExcluir = (id) => {
+    if (window.confirm("Tem certeza que deseja apagar este gasto?")) {
+      aoAdicionar(gastos.filter(g => g.id !== id));
     }
-  }
+  };
 
-  const totalDia = gastosDesteDia.reduce((acumulador, gasto) => {
-    return acumulador + gasto.valor;
-  }, 0)
-
-  // 3. Renderização visual
   return (
-    <div className="modal">
-      <h2>Gastos do dia {diaSelecionado}</h2>
-      
-      {/* Lista Dinâmica */}
-      <div className="lista-gastos">
-        {gastosDesteDia.map(( gasto) => (
-          <div key={gasto.id} className="item-gasto">
-            <span>{gasto.titulo}</span>
-            <span>{gasto.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+    <div className="modal-overlay" onClick={aoFechar}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <h2>Gastos de {diaSelecionado}/{mesAtual + 1}</h2>
+        
+        <div className="lista-gastos">
+          {gastosDesteDia.map(g => (
+            <div key={g.id} className="item-gasto">
+              <span>{g.titulo}</span>
+              <span>{g.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              <button onClick={() => aoExcluir(g.id)}>🗑️</button>
+            </div>
+          ))}
+        </div>
 
-            {/* Botão de Excluir */}
-            <button onClick={() => confirmarExclusao(gasto.id)}>Excluir</button>
-          </div>
-        ))}
+        <div className="total-dia">
+          <strong>Total: {totalDia.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong>
+        </div>
+
+        <div className="formulario-gasto">
+          <input value={titulo} onChange={e => setTitulo(e.target.value)} placeholder="O que comprou?" />
+          <input type="number" value={valor} onChange={e => setValor(e.target.value)} placeholder="Valor" />
+          <button onClick={salvarGasto}>Adicionar</button>
+        </div>
+        
+        <button className="botao-fechar" onClick={aoFechar}>Fechar</button>
       </div>
-
-      {/*Destaque do total do Dia*/}
-      <div className="total-dia" style={{fontWeight: 'bold', marginTop: '15px', borderTop: '2px solid "ccc', paddingTop: '10px'}}>
-        <span>Total: </span>
-        <span>{totalDia.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</span>
-      </div>
-
-      {/* Formulário de Adição */}
-      <div className="formulario-gasto">
-        <input 
-          type="text" 
-          placeholder="Nome do gasto" 
-          value={titulo} 
-          onChange={e => setTitulo(e.target.value)} 
-        />
-        <input 
-          type="number" 
-          placeholder="Valor" 
-          value={valor} 
-          onChange={e => setValor(e.target.value)} 
-        />  
-        <button onClick={salvarValorGasto}>Adicionar Gasto</button>
-      </div>
-
-      {/* Botão de Fechar */}
-      <button onClick={() => aoFechar(null)}>Fechar</button>
     </div>
   );
-}
+};
 
 export default DayModal;

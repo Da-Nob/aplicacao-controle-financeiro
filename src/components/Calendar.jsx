@@ -1,42 +1,63 @@
 import React, { useState } from 'react';
-import DayModal from './DayModal'
+import DayModal from './DayModal';
 
 const Calendar = () => {
-    const [dia, setDia] = useState(null);
-    const [todosOsGastos, setTodosOsGastos] = useState([]);
+  const [todosOsGastos, setTodosOsGastos] = useState([]);
+  const [diaSelecionado, setDiaSelecionado] = useState(null);
+  const [dataReferencia, setDataReferencia] = useState(new Date());
 
-    // 1. Descobrimos que Abril tem 30 dias
-    const diasNoMes = new Date(2026, 4, 0).getDate(); 
+  const mudarMes = (direcao) => {
+    const novaData = new Date(dataReferencia);
+    novaData.setMonth(dataReferencia.getMonth() + direcao);
+    setDataReferencia(novaData);
+  };
 
-    // 2. Descobrimos o dia da semana que cai o dia 1º (ex: 3 para Quarta-feira)
-    const espacosVazios = new Date(2026, 3, 1).getDay(); 
+  const nomeMes = dataReferencia.toLocaleString('pt-BR', { month: 'long' });
+  const ano = dataReferencia.getFullYear();
+  const mesAtual = dataReferencia.getMonth();
 
-    // 3. Criamos o tamanho total da grade e a lista vazia
-    const tamanhoTotal = espacosVazios + diasNoMes; 
-    const gradeCalendario = new Array(tamanhoTotal).fill(null);
-
-    const excluirGasto = (idParaRemover) => {
-      const listaAtualizada = todosOsGastos.filter(gasto => gasto.id !== idParaRemover)
-      setTodosOsGastos(listaAtualizada);
-    }
-    
-
+  // Lógica para calcular quantos dias tem o mês atual
+  const diasNoMes = new Date(ano, mesAtual + 1, 0).getDate();
+  const arrayDias = Array.from({ length: diasNoMes }, (_, i) => i + 1);
 
   return (
-    <>
-    <div className="grade-calendario">
-      {gradeCalendario.map((item, index) => {
-        if (index < espacosVazios) {
-            return <div key={index} className="dia-vazio"></div>
-        } else {
-            const diaAtual = (index - espacosVazios) + 1;
-            return <div key={index} className="dia" onClick={() => setDia(diaAtual)}>{diaAtual}</div>
-        }
-      })}
-    </div>
-    {dia && <DayModal diaSelecionado={dia}  aoFechar={setDia} gastos={todosOsGastos} aoAdicionar={setTodosOsGastos}/>}
-    </>
-  )
-}
+    <div className="calendario-container">
+      <header className="calendario-header">
+        <button onClick={() => mudarMes(-1)}>&lt;</button>
+        <h1 style={{ textTransform: 'capitalize' }}>{nomeMes} {ano}</h1>
+        <button onClick={() => mudarMes(1)}>&gt;</button>
+      </header>
 
-export default Calendar
+      <div className="calendario-grid">
+        {arrayDias.map((dia) => {
+          // Verifica se este dia específico tem algum gasto salvo
+          const temGasto = todosOsGastos.some(g => 
+            g.dia === dia && g.mes === mesAtual && g.ano === ano
+          );
+
+          return (
+            <button 
+              key={dia} 
+              className={`dia-botao ${temGasto ? 'com-gasto' : ''}`}
+              onClick={() => setDiaSelecionado(dia)}
+            >
+              {dia}
+            </button>
+          );
+        })}
+      </div>
+
+      {diaSelecionado && (
+        <DayModal 
+          diaSelecionado={diaSelecionado}
+          dataReferencia={dataReferencia}
+          aoFechar={() => setDiaSelecionado(null)}
+          gastos={todosOsGastos}
+          aoAdicionar={setTodosOsGastos}
+        />
+      )}
+    </div>
+  );
+};
+
+export default Calendar;
