@@ -33,6 +33,10 @@ const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar, aoExcluir}) =
     }
   }
 
+  const totalDia = gastosDesteDia.reduce((acumulador, gasto) => {
+    return acumulador + gasto.valor;
+  }, 0)
+
   // 3. Renderização visual
   return (
     <div className="modal">
@@ -49,6 +53,12 @@ const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar, aoExcluir}) =
             <button onClick={() => confirmarExclusao(gasto.id)}>Excluir</button>
           </div>
         ))}
+      </div>
+
+      {/*Destaque do total do Dia*/}
+      <div className="total-dia" style={{fontWeight: 'bold', marginTop: '15px', borderTop: '2px solid "ccc', paddingTop: '10px'}}>
+        <span>Total: </span>
+        <span>{totalDia.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'})}</span>
       </div>
 
       {/* Formulário de Adição */}
