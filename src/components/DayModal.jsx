@@ -25,6 +25,14 @@ const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar, aoExcluir}) =
 
   const gastosDesteDia = gastos.filter((gasto) => gasto.dia === diaSelecionado)
 
+  const confirmarExclusao = id => {
+    const certeza = window.confirm("tem certeza que deseja apagar este gasto?");
+
+    if (certeza) {
+      aoExcluir(id);
+    }
+  }
+
   // 3. Renderização visual
   return (
     <div className="modal">
@@ -38,7 +46,7 @@ const DayModal = ({ diaSelecionado, aoFechar, gastos, aoAdicionar, aoExcluir}) =
             <span>{gasto.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
 
             {/* Botão de Excluir */}
-            <button onClick={() => aoExcluir(gasto.id)}>Excluir</button>
+            <button onClick={() => confirmarExclusao(gasto.id)}>Excluir</button>
           </div>
         ))}
       </div>
