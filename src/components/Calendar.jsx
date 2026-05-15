@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DayModal from './DayModal';
 
 const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
 const Calendar = () => {
-  const [todosOsGastos, setTodosOsGastos] = useState([]);
+  const [todosOsGastos, setTodosOsGastos] = useState(() => {
+    const dadosSalvos = localStorage.getItem('meus-gastos');
+    if (dadosSalvos !== null) {
+      const dadosLimpos = JSON.parse(dadosSalvos);
+      return dadosLimpos;
+    }
+    return [];
+  });
   const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [dataReferencia, setDataReferencia] = useState(new Date());
+
+  useEffect(() => {
+    localStorage.setItem('meus-gastos', JSON.stringify(todosOsGastos));
+  }, [todosOsGastos])
+
 
   const mudarMes = (direcao) => {
     const novaData = new Date(dataReferencia);
