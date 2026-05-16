@@ -1,24 +1,52 @@
 import { useState, useEffect } from 'react';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  setDoc,
+} from 'firebase/firestore';
 import DayModal from './DayModal';
+import { db } from '../firebase';
 
 const diasSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 
-const Calendar = () => {
-  const [todosOsGastos, setTodosOsGastos] = useState(() => {
-    const dadosSalvos = localStorage.getItem('meus-gastos');
-    if (dadosSalvos !== null) {
-      const dadosLimpos = JSON.parse(dadosSalvos);
-      return dadosLimpos;
-    }
-    return [];
-  });
+const Calendar = ({ usuario }) => {
+  const [todosOsGastos, setTodosOsGastos] = useState([]);
   const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [dataReferencia, setDataReferencia] = useState(new Date());
+  const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem('meus-gastos', JSON.stringify(todosOsGastos));
-  }, [todosOsGastos])
+    if (!usuario) return;
 
+    const gastosRef = collection(db, 'users', usuario.uid, 'gastos');
+
+    const pararDeObservar = onSnapshot(
+      gastosRef,
+      (snapshot) => {
+        const gastos = snapshot.docs.map((documento) => documento.data());
+        setTodosOsGastos(gastos);
+        setCarregando(false);
+      },
+      (erro) => {
+        console.error('Erro ao buscar gastos:', erro);
+        setCarregando(false);
+      }
+    );
+
+    return () => pararDeObservar();
+  }, [usuario]);
+
+  const adicionarGasto = async (novoGasto) => {
+    const gastoRef = doc(db, 'users', usuario.uid, 'gastos', novoGasto.id);
+    await setDoc(gastoRef, novoGasto);
+  };
+
+  const excluirGasto = async (id) => {
+    const gastoRef = doc(db, 'users', usuario.uid, 'gastos', id);
+    await deleteDoc(gastoRef);
+  };
 
   const mudarMes = (direcao) => {
     const novaData = new Date(dataReferencia);
@@ -34,6 +62,10 @@ const Calendar = () => {
   const primeiroDiaSemana = new Date(ano, mesAtual, 1).getDay();
   const diasVazios = Array.from({ length: primeiroDiaSemana });
   const arrayDias = Array.from({ length: diasNoMes }, (_, i) => i + 1);
+
+  if (carregando) {
+    return <p>Carregando gastos...</p>;
+  }
 
   return (
     <div className="calendario-container">
@@ -101,7 +133,8 @@ const Calendar = () => {
           dataReferencia={dataReferencia}
           aoFechar={() => setDiaSelecionado(null)}
           gastos={todosOsGastos}
-          aoAdicionar={setTodosOsGastos}
+          aoAdicionar={adicionarGasto}
+          aoExcluir={excluirGasto}
         />
       )}
     </div>

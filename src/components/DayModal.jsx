@@ -5,7 +5,7 @@ const formatarMoeda = (valor) => valor.toLocaleString('pt-BR', {
   currency: 'BRL',
 });
 
-const DayModal = ({ diaSelecionado, dataReferencia, aoFechar, gastos, aoAdicionar }) => {
+const DayModal = ({ diaSelecionado, dataReferencia, aoFechar, gastos, aoAdicionar, aoExcluir }) => {
   const [titulo, setTitulo] = useState('');
   const [valor, setValor] = useState('');
 
@@ -30,16 +30,16 @@ const DayModal = ({ diaSelecionado, dataReferencia, aoFechar, gastos, aoAdiciona
       ano: anoAtual,
     };
 
-    aoAdicionar([...gastos, novoGasto]);
+    aoAdicionar(novoGasto);
     setTitulo('');
     setValor('');
   };
 
-  const aoExcluir = (id) => {
+  const excluirGasto = (id) => {
     if (window.confirm('Tem certeza que deseja apagar este gasto?')) {
-      aoAdicionar(gastos.filter((gasto) => gasto.id !== id));
+      aoExcluir(id);
     }
-  };
+};
 
   return (
     <div className="modal-overlay" onClick={aoFechar} role="presentation">
@@ -65,7 +65,7 @@ const DayModal = ({ diaSelecionado, dataReferencia, aoFechar, gastos, aoAdiciona
                   <span>{gasto.titulo}</span>
                   <strong>{formatarMoeda(gasto.valor)}</strong>
                 </div>
-                <button type="button" onClick={() => aoExcluir(gasto.id)} aria-label={`Excluir ${gasto.titulo}`}>
+                <button type="button" onClick={() => excluirGasto(gasto.id)} aria-label={`Excluir ${gasto.titulo}`}>
                   🗑️
                 </button>
               </div>
